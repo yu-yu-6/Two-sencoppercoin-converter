@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二銭銅貨式暗号化</title>
+    <style>
+        body { font-family: serif; max-width: 750px; margin: 40px auto; padding: 20px; background-color: #f4f1e1; color: #2c1e11; }
+        .box { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 2px solid #8c6450; }
+        h1 { text-align: center; color: #5d3e2f; margin-top: 0; border-bottom: 1px solid #d3c4a9; padding-bottom: 15px; }
+        textarea { width: 100%; height: 120px; padding: 15px; box-sizing: border-box; font-size: 18px; margin-bottom: 15px; border: 1px solid #d3c4a9; border-radius: 4px; background-color: #fdfcf8; line-height: 1.5; }
+        
+        .button-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { flex: 2; padding: 18px; background: #8c6450; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #6d4c3d; }
+        button.reset-btn { flex: 1; background: #a8a095; font-size: 16px; }
+        
+        .result-container { position: relative; margin-top: 25px; text-align: center; }
+        #outputText { padding: 20px; background: #fffaf0; border: 1px dashed #8c6450; line-height: 2.2; font-size: 22px; min-height: 60px; word-break: break-all; border-radius: 4px; text-align: left; }
+        
+        .copy-btn { width: 100%; margin-top: 10px; background: #5d3e2f; font-size: 14px; padding: 10px; }
+        
+        /* 埋め込みリンクのスタイル */
+        .external-link { display: block; margin-top: 15px; color: #8c6450; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .external-link:hover { text-decoration: underline; color: #6d4c3d; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>二銭銅貨式暗号化ツール</h1>
+    <textarea id="inputText" placeholder="変換したい文字を入力..."></textarea>
+    
+    <div class="button-group">
+        <button onclick="convert()">変換する</button>
+        <button class="reset-btn" onclick="resetAll()">リセット</button>
+    </div>
+    
+    <div class="result-container">
+        <div id="outputText"></div>
+        <button class="copy-btn" id="copyBtn" style="display:none;" onclick="copyResult()">結果をコピーする</button>
+        
+        <a href="https://www.aozora.gr.jp/cards/001779/card56647.html" class="external-link" target="_blank">▶ 二銭銅貨を読む（青空文庫）</a>
+    </div>
+</div>
+
+<script>
+// 変換ルール (前回のロジックを維持)
+const rules = {
+    'あ': '南', 'い': '南無', 'う': '南弥', 'え': '南無弥', 'お': '無弥',
+    'か': '南仏', 'き': '南無仏', 'く': '南弥仏', 'け': '南無弥仏', 'こ': '無弥仏',
+    'さ': '南陀仏', 'し': '南無陀仏', 'す': '南弥陀仏', 'せ': '南無弥陀仏', 'そ': '無弥陀仏',
+    'た': '南阿陀', 'ち': '南無阿陀', 'つ': '南弥阿陀', 'て': '南無阿弥陀', 'と': '無弥阿陀',
+    'な': '南阿', 'に': '南無阿', 'ぬ': '南阿弥', 'ね': '南無阿弥', 'の': '無阿弥',
+    'は': '南阿仏', 'ひ': '南無阿仏', 'ふ': '南阿弥仏', 'へ': '南無阿弥仏', 'ほ': '無阿弥仏',
+    'ま': '南阿陀仏', 'み': '南無阿陀仏', 'む': '南阿弥陀仏', 'め': '南無阿弥陀仏', 'も': '無阿弥陀仏',
+    'や': '阿弥', 'ゆ': '阿弥仏', 'よ': '阿弥陀',
+    'ら': '南陀', 'り': '南無陀', 'る': '南弥陀', 'れ': '南無弥陀', 'ろ': '無弥陀',
+    'わ': '阿', 'を': '阿陀', 'ん': '阿陀仏',
+    '-': '無陀', 'ー': '無陀', 'っ': '無', '、': '陀仏', ',': '陀仏',
+    '。': '南無阿弥陀仏', '.': '南無阿弥陀仏', '!': '無阿陀', '?': '無仏'
+};
+
+const specialRules = {
+    'うぃ': '無仏、南無', 'うぇ': '無仏、南無弥', 'うぉ': '無仏、無弥',
+    'くぁ': '無仏、南仏', 'くぃ': '無仏、南無仏', 'くぇ': '無仏、南無弥仏', 'くぉ': '無仏、無弥仏',
+    'ぐぁ': '無陀仏、南仏', 'ぐぃ': '無陀仏、南無仏', 'ぐぇ': '無陀仏、南無弥仏', 'ぐぉ': '無陀仏、無弥仏',
+    'つぁ': '無仏、南阿陀', 'つぃ': '無仏、南無阿陀', 'つぇ': '無仏、南無阿弥陀', 'つぉ': '無仏、無阿弥陀',
+    'ふぁ': '無仏、南阿仏', 'ふぃ': '無仏、南無阿仏', 'ふぇ': '無仏、南無阿弥仏', 'ふぉ': '無仏、無阿弥陀',
+    'ゔぁ': '無陀仏、南阿仏', 'ゔぃ': '無陀仏、南無阿仏', 'ゔぇ': '無陀仏、南無阿弥仏', 'ゔぉ': '無陀仏、無阿弥陀',
+    'いぇ': '弥、南無弥', 'きぇ': '弥、南無弥仏', 'しぇ': '弥、南無弥陀仏', 'じぇ': '弥陀、南無弥陀仏',
+    'ちぇ': '弥、南無阿弥陀', 'にぇ': '弥、南無阿弥', 'ひぇ': '弥、南無阿弥仏', 'すぃ': '弥、南無陀仏',
+    'ずぃ': '弥陀、南無陀仏', 'てぃ': '弥、南無阿陀', 'でぃ': '弥陀、南無阿陀', 'とぅ': '無仏、南阿弥陀',
+    'どぅ': '無陀仏、南阿弥陀', 'てゅ': '弥仏、南阿弥陀', 'でゅ': '弥陀仏、南阿弥陀', 'ふゅ': '弥仏、阿弥仏',
+    'ゔゅ': '弥陀仏、阿弥仏', 'ふょ': '弥仏、阿弥陀', 'ゔょ': '弥陀仏、阿弥陀'
+};
+
+const youonBodyMap = {
+    'き':'か', 'し':'さ', 'ち':'た', 'に':'な', 'ひ':'は', 'み':'ま', 'り':'ら',
+    'ぎ':'か', 'じ':'さ', 'ぢ':'た', 'び':'は', 'ぴ':'は'
+};
+
+const smallToLarge = {'ぁ':'あ', 'ぃ':'い', 'ぅ':'う', 'ぇ':'え', 'ぉ':'お', 'ゃ':'や', 'ゅ':'ゆ', 'ょ':'よ'};
+const marks = { you: '弥', daku: '陀', han: '仏' };
+
+function convert() {
+    const input = document.getElementById('inputText').value;
+    if(!input) return;
+
+    let result = [];
+    let i = 0;
+    let text = input.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))
+                    .replace(/[\u30a1-\u30f6]/g, s => String.fromCharCode(s.charCodeAt(0) - 0x60));
+
+    while (i < text.length) {
+        let char2 = text.substring(i, i + 2);
+        let char1 = text[i];
+        if (specialRules[char2]) { result.push(specialRules[char2]); i += 2; }
+        else if (i + 1 < text.length && "ゃゅょ".includes(text[i+1])) {
+            let nextChar = text[i+1];
+            let normalized = char1.normalize('NFD');
+            let base = normalized[0];
+            let hasDaku = normalized.includes('\u3099');
+            let hasHan = normalized.includes('\u309a');
+            let prefix = marks.you;
+            if (hasDaku) prefix += marks.daku;
+            if (hasHan) prefix += marks.han;
+            let bodyKey = youonBodyMap[base] || base;
+            if (nextChar === 'ゅ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'う','か':'く','さ':'す','た':'つ','な':'ぬ','は':'ふ','ま':'む','や':'ゆ','ら':'る','わ':'う'}[s]));
+            if (nextChar === 'ょ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'お','か':'こ','さ':'そ','た':'と','な':'の','は':'ほ','ま':'も','や':'よ','ら':'ろ','わ':'を'}[s]));
+            result.push(prefix); result.push(rules[bodyKey] || bodyKey); i += 2;
+        }
+        else {
+            let processedChar = smallToLarge[char1] || char1;
+            if (rules[processedChar]) { result.push(rules[processedChar]); }
+            else if (processedChar === 'ゔ') { result.push(marks.daku); result.push(rules['う']); }
+            else {
+                let normalized = processedChar.normalize('NFD');
+                let base = normalized[0];
+                let hasDaku = normalized.includes('\u3099');
+                let hasHan = normalized.includes('\u309a');
+                let body = rules[base] || base;
+                if (hasDaku) { result.push(marks.daku); result.push(body); }
+                else if (hasHan) { result.push(marks.han); result.push(body); }
+                else { result.push(body); }
+            }
+            i += 1;
+        }
+    }
+    const finalStr = result.join('、');
+    document.getElementById('outputText').innerText = finalStr;
+    document.getElementById('copyBtn').style.display = finalStr ? 'block' : 'none';
+}
+
+function resetAll() {
+    document.getElementById('inputText').value = "";
+    document.getElementById('outputText').innerText = "";
+    document.getElementById('copyBtn').style.display = 'none';
+}
+
+function copyResult() {
+    const text = document.getElementById('outputText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "コピーしました！";
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
+    });
+}
+</script>
+
+</body>
+</html>
