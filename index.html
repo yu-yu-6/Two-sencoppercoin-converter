@@ -83,67 +83,67 @@ function convert() {
     let result = [];
     let i = 0;
     let text = input.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))
-                    .交換する(/[\u30a1-\u30f6]/g, s => 文字列.からcharcode(s.charcodeat(0) - 0x60));
+                    .replace(/[\u30a1-\u30f6]/g, s => String.fromCharCode(s.charCodeAt(0) - 0x60));
 
-    その間 (i < テキスト.長さ) {
-        させて チャル2 = テキスト.部分文字列(i, i + 2);
-        させて チャール1 = テキスト[i];
-        もし (特別規則[チャル2]) { 結果.押す(特別規則[チャル2]); i += 2; }
-        それ以外 もし (i + 1 < テキスト.長さ && 「ガンソン」.含む(テキスト[i+1])) {
-            させて 次のChar = テキスト[i+1];
-            させて 正規化された = チャール1.ノーマライズ(‘NFD’);
-            させて ベース = 正規化された[0];
-            させて ハスダク = 正規化された.含む('\u3099');
-            させて ハシャン = 正規化された.含む('\u309a');
-            させて プレフィックス = マーク.あなた;
-            もし (ハスダク) プレフィックス += マーク.ダク;
-            もし (ハシャン) プレフィックス += マーク.ハン;
-            させて ボディキー = ユーオンボディマップ[ベース] || ベース;
-            もし (次のChar === 「わ」) ボディキー = ボディキー.交換する(/[あざけるからこっちへ]/, s => ({「あ」:「う」,「は」:「え」,「あ」:「は」,「た」:「つ」,「な」:「は」,「は」:「ふ」,「ま」:「む」,「y」:「う」,「ら」:「あ」,「あく」:「う」}[s]||s));
-            もし (次のChar === 「ン」) ボディキー = ボディキー.交換する(/[あざけるからこっちへ]/, s => ({「あ」:「お」,「は」:「へ」,「あ」:「へ」,「た」:「え」,「な」:「は」,「は」:「ほ」,「ま」:「あん」,「あ」:「よ」,「ら」:「き」,「あく」:「え」}[s]||s));
-            結果.押す(プレフィックス); 結果.押す(ルール[ボディキー] || ボディキー); i += 2;
+    while (i < text.length) {
+        let char2 = text.substring(i, i + 2);
+        let char1 = text[i];
+        if (specialRules[char2]) { result.push(specialRules[char2]); i += 2; }
+        else if (i + 1 < text.length && "ゃゅょ".includes(text[i+1])) {
+            let nextChar = text[i+1];
+            let normalized = char1.normalize('NFD');
+            let base = normalized[0];
+            let hasDaku = normalized.includes('\u3099');
+            let hasHan = normalized.includes('\u309a');
+            let prefix = marks.you;
+            if (hasDaku) prefix += marks.daku;
+            if (hasHan) prefix += marks.han;
+            let bodyKey = youonBodyMap[base] || base;
+            if (nextChar === 'ゅ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'う','か':'く','さ':'す','た':'つ','な':'ぬ','は':'ふ','ま':'む','y':'ゆ','ら':'る','わ':'う'}[s]||s));
+            if (nextChar === 'ょ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'お','か':'こ','さ':'そ','た':'と','な':'の','は':'ほ','ま':'も','や':'よ','ら':'ろ','わ':'を'}[s]||s));
+            result.push(prefix); result.push(rules[bodyKey] || bodyKey); i += 2;
         }
-        それ以外 {
-            させて 処理されたチャー = 小さいから大きい[チャール1] || チャール1;
-            もし (ルール[処理されたチャー]) { 結果.押す(ルール[処理されたチャー]); }
-            それ以外 もし (処理されたチャー === 「ゔ」) { 結果.押す(マーク.ダク); 結果.押す(ルール[「う」]); }
-            それ以外 {
-                させて 正規化された = 処理されたチャー.ノーマライズ(‘NFD’);
-                させて ベース = 正規化された[0];
-                させて ハスダク = 正規化された.含む('\u3099');
-                させて ハシャン = 正規化された.含む('\u309a');
-                させて 体 = ルール[ベース] || ベース;
-                もし (ハスダク) { 結果.押す(マーク.ダク); 結果.押す(体); }
-                それ以外 もし (ハシャン) { 結果.押す(マーク.ハン); 結果.押す(体); }
-                それ以外 { 結果.押す(体); }
+        else {
+            let processedChar = smallToLarge[char1] || char1;
+            if (rules[processedChar]) { result.push(rules[processedChar]); }
+            else if (processedChar === 'ゔ') { result.push(marks.daku); result.push(rules['う']); }
+            else {
+                let normalized = processedChar.normalize('NFD');
+                let base = normalized[0];
+                let hasDaku = normalized.includes('\u3099');
+                let hasHan = normalized.includes('\u309a');
+                let body = rules[base] || base;
+                if (hasDaku) { result.push(marks.daku); result.push(body); }
+                else if (hasHan) { result.push(marks.han); result.push(body); }
+                else { result.push(body); }
             }
             i += 1;
         }
     }
     
-    // 助ちゃんちゃん:そうねずんぐり「、」そういえば、そういえば、そういえば、そういえば
-    させて 最終Str = 結果.参加(「、」).交換する(/、+/g, 「、」).交換する(/、$/, ');
+    // 修正ポイント：すでに内部に「、」がある要素を考慮して結合
+    let finalStr = result.join('、').replace(/、+/g, '、').replace(/、$/, '');
     
-    文書.getElementById(‘outputText’).インナーテキスト = 最終Str;
-    文書.getElementById(「コピーボタン」).スタイル.表示 = 最終Str ? 「ブロック」 : 「なし」;
+    document.getElementById('outputText').innerText = finalStr;
+    document.getElementById('copyBtn').style.display = finalStr ? 'block' : 'none';
 }
 
-関数 すべてリセット() {
-    文書.getElementById(‘inputText’).値 = 「;
-    文書.getElementById(‘outputText’).インナーテキスト = 「;
-    文書.getElementById(「コピーボタン」).スタイル.表示 = 「なし」;
+function resetAll() {
+    document.getElementById('inputText').value = "";
+    document.getElementById('outputText').innerText = "";
+    document.getElementById('copyBtn').style.display = 'none';
 }
 
-関数 コピー結果() {
-    const テキスト = 文書.getElementById(‘outputText’).インナーテキスト;
-    ナビゲーター.クリップボード.書き込みテキスト(テキスト).それから(() => {
-        const btn = 文書.getElementById(「コピーボタン」);
-        const オリジナルテキスト = btn.インナーテキスト;
-        btn.インナーテキスト = 「やーしゅーしゅー！」;
-        セットタイムアウト(() => { btn.インナーテキスト = オリジナルテキスト; }, 2000年);
+function copyResult() {
+    const text = document.getElementById('outputText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "コピーしました！";
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
     });
 }
-</スクリプト>
+</script>
 
-</体>
-    </HTML>
+</body>
+</html>
