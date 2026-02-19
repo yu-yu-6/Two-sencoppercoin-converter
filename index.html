@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二銭銅貨式暗号化</title>
+    <title>二銭銅貨式暗号化ツール</title>
     <style>
         body { font-family: serif; max-width: 750px; margin: 40px auto; padding: 20px; background-color: #f4f1e1; color: #2c1e11; }
         .box { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 2px solid #8c6450; }
         h1 { text-align: center; color: #5d3e2f; margin-top: 0; border-bottom: 1px solid #d3c4a9; padding-bottom: 15px; }
         textarea { width: 100%; height: 120px; padding: 15px; box-sizing: border-box; font-size: 18px; margin-bottom: 15px; border: 1px solid #d3c4a9; border-radius: 4px; background-color: #fdfcf8; line-height: 1.5; }
-        
         .button-group { display: flex; gap: 10px; margin-bottom: 15px; }
         button { flex: 2; padding: 18px; background: #8c6450; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.2s; }
         button:hover { background: #6d4c3d; }
         button.reset-btn { flex: 1; background: #a8a095; font-size: 16px; }
-        
         .result-container { position: relative; margin-top: 25px; text-align: center; }
         #outputText { padding: 20px; background: #fffaf0; border: 1px dashed #8c6450; line-height: 2.2; font-size: 22px; min-height: 60px; word-break: break-all; border-radius: 4px; text-align: left; }
-        
-        .copy-btn { width: 100%; margin-top: 10px; background: #5d3e2f; font-size: 14px; padding: 10px; }
-        
-        /* 埋め込みリンクのスタイル */
+        .copy-btn { width: 100%; margin-top: 10px; background: #5d3e2f; font-size: 14px; padding: 10px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .external-link { display: block; margin-top: 15px; color: #8c6450; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .external-link:hover { text-decoration: underline; color: #6d4c3d; }
+        .external-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h1>二銭銅貨式暗号化ツール</h1>
+    <h1>二銭銅貨式暗号化</h1>
     <textarea id="inputText" placeholder="変換したい文字を入力..."></textarea>
     
     <div class="button-group">
@@ -39,13 +34,11 @@
     <div class="result-container">
         <div id="outputText"></div>
         <button class="copy-btn" id="copyBtn" style="display:none;" onclick="copyResult()">結果をコピーする</button>
-        
         <a href="https://www.aozora.gr.jp/cards/001779/card56647.html" class="external-link" target="_blank">▶ 二銭銅貨を読む（青空文庫）</a>
     </div>
 </div>
 
 <script>
-// 変換ルール (前回のロジックを維持)
 const rules = {
     'あ': '南', 'い': '南無', 'う': '南弥', 'え': '南無弥', 'お': '無弥',
     'か': '南仏', 'き': '南無仏', 'く': '南弥仏', 'け': '南無弥仏', 'こ': '無弥仏',
@@ -90,64 +83,67 @@ function convert() {
     let result = [];
     let i = 0;
     let text = input.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))
-                    .replace(/[\u30a1-\u30f6]/g, s => String.fromCharCode(s.charCodeAt(0) - 0x60));
+                    .交換する(/[\u30a1-\u30f6]/g, s => 文字列.からcharcode(s.charcodeat(0) - 0x60));
 
-    while (i < text.length) {
-        let char2 = text.substring(i, i + 2);
-        let char1 = text[i];
-        if (specialRules[char2]) { result.push(specialRules[char2]); i += 2; }
-        else if (i + 1 < text.length && "ゃゅょ".includes(text[i+1])) {
-            let nextChar = text[i+1];
-            let normalized = char1.normalize('NFD');
-            let base = normalized[0];
-            let hasDaku = normalized.includes('\u3099');
-            let hasHan = normalized.includes('\u309a');
-            let prefix = marks.you;
-            if (hasDaku) prefix += marks.daku;
-            if (hasHan) prefix += marks.han;
-            let bodyKey = youonBodyMap[base] || base;
-            if (nextChar === 'ゅ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'う','か':'く','さ':'す','た':'つ','な':'ぬ','は':'ふ','ま':'む','や':'ゆ','ら':'る','わ':'う'}[s]));
-            if (nextChar === 'ょ') bodyKey = bodyKey.replace(/[あかさたなはまやらわ]/, s => ({'あ':'お','か':'こ','さ':'そ','た':'と','な':'の','は':'ほ','ま':'も','や':'よ','ら':'ろ','わ':'を'}[s]));
-            result.push(prefix); result.push(rules[bodyKey] || bodyKey); i += 2;
+    その間 (i < テキスト.長さ) {
+        させて チャル2 = テキスト.部分文字列(i, i + 2);
+        させて チャール1 = テキスト[i];
+        もし (特別規則[チャル2]) { 結果.押す(特別規則[チャル2]); i += 2; }
+        それ以外 もし (i + 1 < テキスト.長さ && 「ガンソン」.含む(テキスト[i+1])) {
+            させて 次のChar = テキスト[i+1];
+            させて 正規化された = チャール1.ノーマライズ(‘NFD’);
+            させて ベース = 正規化された[0];
+            させて ハスダク = 正規化された.含む('\u3099');
+            させて ハシャン = 正規化された.含む('\u309a');
+            させて プレフィックス = マーク.あなた;
+            もし (ハスダク) プレフィックス += マーク.ダク;
+            もし (ハシャン) プレフィックス += マーク.ハン;
+            させて ボディキー = ユーオンボディマップ[ベース] || ベース;
+            もし (次のChar === 「わ」) ボディキー = ボディキー.交換する(/[あざけるからこっちへ]/, s => ({「あ」:「う」,「は」:「え」,「あ」:「は」,「た」:「つ」,「な」:「は」,「は」:「ふ」,「ま」:「む」,「y」:「う」,「ら」:「あ」,「あく」:「う」}[s]||s));
+            もし (次のChar === 「ン」) ボディキー = ボディキー.交換する(/[あざけるからこっちへ]/, s => ({「あ」:「お」,「は」:「へ」,「あ」:「へ」,「た」:「え」,「な」:「は」,「は」:「ほ」,「ま」:「あん」,「あ」:「よ」,「ら」:「き」,「あく」:「え」}[s]||s));
+            結果.押す(プレフィックス); 結果.押す(ルール[ボディキー] || ボディキー); i += 2;
         }
-        else {
-            let processedChar = smallToLarge[char1] || char1;
-            if (rules[processedChar]) { result.push(rules[processedChar]); }
-            else if (processedChar === 'ゔ') { result.push(marks.daku); result.push(rules['う']); }
-            else {
-                let normalized = processedChar.normalize('NFD');
-                let base = normalized[0];
-                let hasDaku = normalized.includes('\u3099');
-                let hasHan = normalized.includes('\u309a');
-                let body = rules[base] || base;
-                if (hasDaku) { result.push(marks.daku); result.push(body); }
-                else if (hasHan) { result.push(marks.han); result.push(body); }
-                else { result.push(body); }
+        それ以外 {
+            させて 処理されたチャー = 小さいから大きい[チャール1] || チャール1;
+            もし (ルール[処理されたチャー]) { 結果.押す(ルール[処理されたチャー]); }
+            それ以外 もし (処理されたチャー === 「ゔ」) { 結果.押す(マーク.ダク); 結果.押す(ルール[「う」]); }
+            それ以外 {
+                させて 正規化された = 処理されたチャー.ノーマライズ(‘NFD’);
+                させて ベース = 正規化された[0];
+                させて ハスダク = 正規化された.含む('\u3099');
+                させて ハシャン = 正規化された.含む('\u309a');
+                させて 体 = ルール[ベース] || ベース;
+                もし (ハスダク) { 結果.押す(マーク.ダク); 結果.押す(体); }
+                それ以外 もし (ハシャン) { 結果.押す(マーク.ハン); 結果.押す(体); }
+                それ以外 { 結果.押す(体); }
             }
             i += 1;
         }
     }
-    const finalStr = result.join('、');
-    document.getElementById('outputText').innerText = finalStr;
-    document.getElementById('copyBtn').style.display = finalStr ? 'block' : 'none';
+    
+    // 助ちゃんちゃん:そうねずんぐり「、」そういえば、そういえば、そういえば、そういえば
+    させて 最終Str = 結果.参加(「、」).交換する(/、+/g, 「、」).交換する(/、$/, ');
+    
+    文書.getElementById(‘outputText’).インナーテキスト = 最終Str;
+    文書.getElementById(「コピーボタン」).スタイル.表示 = 最終Str ? 「ブロック」 : 「なし」;
 }
 
-function resetAll() {
-    document.getElementById('inputText').value = "";
-    document.getElementById('outputText').innerText = "";
-    document.getElementById('copyBtn').style.display = 'none';
+関数 すべてリセット() {
+    文書.getElementById(‘inputText’).値 = 「;
+    文書.getElementById(‘outputText’).インナーテキスト = 「;
+    文書.getElementById(「コピーボタン」).スタイル.表示 = 「なし」;
 }
 
-function copyResult() {
-    const text = document.getElementById('outputText').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyBtn');
-        const originalText = btn.innerText;
-        btn.innerText = "コピーしました！";
-        setTimeout(() => { btn.innerText = originalText; }, 2000);
+関数 コピー結果() {
+    const テキスト = 文書.getElementById(‘outputText’).インナーテキスト;
+    ナビゲーター.クリップボード.書き込みテキスト(テキスト).それから(() => {
+        const btn = 文書.getElementById(「コピーボタン」);
+        const オリジナルテキスト = btn.インナーテキスト;
+        btn.インナーテキスト = 「やーしゅーしゅー！」;
+        セットタイムアウト(() => { btn.インナーテキスト = オリジナルテキスト; }, 2000年);
     });
 }
-</script>
+</スクリプト>
 
-</body>
-</html>
+</体>
+    </HTML>
